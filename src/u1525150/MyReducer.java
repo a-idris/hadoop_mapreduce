@@ -10,7 +10,6 @@ public class MyReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 	@Override
 	protected void reduce(Text key, Iterable<IntWritable> values,
 			Reducer<Text, IntWritable, Text, IntWritable>.Context context) throws IOException, InterruptedException {
-		// TODO Auto-generated method stub
 //		super.reduce(arg0, arg1, arg2);
 		int sum = 0;
 		for (IntWritable val : values) {

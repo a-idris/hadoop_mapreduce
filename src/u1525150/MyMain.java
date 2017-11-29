@@ -55,6 +55,9 @@ public class MyMain extends Configured implements Tool {
 		FileOutputFormat.setOutputPath(job, new Path(args[4]));
 								
 		return job.waitForCompletion(true) ? 0 : 1;
+		//don't return, wait until completion.
+		//parse outdir files, merging and printing.
+		
 	}
 
 	public static void main(String[] args) throws Exception {
