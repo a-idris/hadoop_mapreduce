@@ -13,9 +13,9 @@ public class MyMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 	@Override
 	protected void map(LongWritable key, Text value, Mapper<LongWritable, Text, Text, IntWritable>.Context context) 
 			throws IOException, InterruptedException {
-//		super.map(key, value, context);
 		
 		Configuration conf = context.getConfiguration();
+		//get bounding timestamps
 		long timestamp0 = conf.getLong("start_timestamp", -1);
 		if (timestamp0 == -1) {
 			throw new IOException();
@@ -29,41 +29,35 @@ public class MyMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 		}
 		Timestamp endTimestamp = new Timestamp(timestamp1);
 		
-		//not needed 
-		int n;
-		try {
-			n = Integer.parseInt(conf.get("N_number"));
-		} catch (NumberFormatException e) {
-			//err handling
-			return;
-		}
+		String file = value.toString();
+		String[] lines = file.split("\n");
 		
-		String line = value.toString();
-		String[] tokens = line.split(" ");
-		String timestamp_str = tokens[4];
-		
-		SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
-		Timestamp ts = null;
-		try {
-			ts = new Timestamp(simpleDateFormat.parse(timestamp_str).getTime());
-		} catch (Exception e) {
-			//err handling
-			return;
-		}
-		
-		//only pass to reducer if between time bounds
-		if (ts.after(startTimestamp) && ts.before(endTimestamp)) {
-			//get user_id
-			int userId;
+		for (int i = 0; i < lines.length; i += 14) {
+			String[] tokens = lines[i].split(" ");
+			
+			String timestamp_str = tokens[4];
+			SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+			Timestamp ts = null;
 			try {
-				userId = Integer.parseInt(tokens[6]);
-			} catch (NumberFormatException e) {
+				ts = new Timestamp(simpleDateFormat.parse(timestamp_str).getTime());
+			} catch (Exception e) {
+				//err handling
 				return;
 			}
-			context.write(new Text(tokens[6]), new IntWritable(1));
+			
+			//only pass to reducer if between time bounds
+			if (ts.after(startTimestamp) && ts.before(endTimestamp)) {
+				//get user_id
+				int userId;
+				try {
+					userId = Integer.parseInt(tokens[6]);
+					context.write(new Text(tokens[6]), new IntWritable(1));
+				} catch (NumberFormatException e) {
+					return;
+				}
+			}	
 		}
 	}
-	
 }
 
 /*second mapper after reducer: where key = amount/counter

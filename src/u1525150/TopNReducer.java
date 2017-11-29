@@ -1,5 +1,6 @@
 package u1525150;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.hadoop.io.*;
