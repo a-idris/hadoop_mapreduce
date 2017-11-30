@@ -10,7 +10,6 @@ public class MyReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 	@Override
 	protected void reduce(Text userId, Iterable<IntWritable> counts,
 			Reducer<Text, IntWritable, Text, IntWritable>.Context context) throws IOException, InterruptedException {
-//		super.reduce(arg0, arg1, arg2);
 		int totalRevisions = 0;
 		for (IntWritable count : counts) {
 			totalRevisions += count.get();

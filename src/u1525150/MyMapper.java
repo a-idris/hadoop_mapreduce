@@ -29,17 +29,16 @@ public class MyMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 		}
 		Timestamp endTimestamp = new Timestamp(timestamp1);
 		
-		String file = value.toString();
-		String[] lines = file.split("\n");
-		
-		for (int i = 0; i < lines.length; i += 14) {
-			String[] tokens = lines[i].split(" ");
+		String line = value.toString();
+		//the wanted line and only the wanted line will start with 'REVISION'
+		if (line.startsWith("REVISION")) {
+			String[] tokens = line.split(" ");
 			
-			String timestamp_str = tokens[4];
+			String timestampStr = tokens[4];
 			SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 			Timestamp ts = null;
 			try {
-				ts = new Timestamp(simpleDateFormat.parse(timestamp_str).getTime());
+				ts = new Timestamp(simpleDateFormat.parse(timestampStr).getTime());
 			} catch (Exception e) {
 				//err handling
 				return;
@@ -48,14 +47,9 @@ public class MyMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 			//only pass to reducer if between time bounds
 			if (ts.after(startTimestamp) && ts.before(endTimestamp)) {
 				//get user_id
-				int userId;
-				try {
-					userId = Integer.parseInt(tokens[6]);
-					context.write(new Text(tokens[6]), new IntWritable(1));
-				} catch (NumberFormatException e) {
-					return;
-				}
-			}	
+				String userIdStr = tokens[6];
+				context.write(new Text(userIdStr), new IntWritable(1));
+			}
 		}
 	}
 }
