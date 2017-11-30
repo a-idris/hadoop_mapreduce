@@ -8,12 +8,12 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 class TopNReducer extends Reducer<IntWritable, Text, Text, IntWritable> {
 	@Override
-	protected void reduce(IntWritable key, Iterable<Text> values,
+	protected void reduce(IntWritable totalRevisions, Iterable<Text> userIds,
 			Reducer<IntWritable, Text, Text, IntWritable>.Context context) throws IOException, InterruptedException {
-		int counter = 0;
-		Iterator<Text> it = values.iterator();
-		while (it.hasNext() && counter++ < 1000) {
-			context.write(it.next(), key);
+
+		//mb sort in this part, when looping thru userIds?
+		for (Text userId : userIds) {
+			context.write(userId, totalRevisions);
 		}
 	}
 }
