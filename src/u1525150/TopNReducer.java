@@ -24,8 +24,8 @@ class TopNReducer extends Reducer<IntPair, NullWritable, IntWritable, IntWritabl
 			
 			//stop writing after n lines have been passed.
 			if (count++ < n) {
-				IntWritable userId = new IntWritable(compositeKey.getSecond());
-				IntWritable totalRevisions = new IntWritable(compositeKey.getFirst());
+				IntWritable userId = compositeKey.getSecond();
+				IntWritable totalRevisions = compositeKey.getFirst();
 				context.write(userId, totalRevisions);				
 			}
 		}

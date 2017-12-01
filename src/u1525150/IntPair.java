@@ -4,57 +4,78 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.WritableComparable;
 
 public class IntPair implements WritableComparable<IntPair> {
 
-	private int firstInt;
-	private int secondInt;
+	private IntWritable firstInt;
+	private IntWritable secondInt;
 	
 	public IntPair() {
 	}
 	
 	public IntPair(int firstInt, int secondInt) {
+		set(new IntWritable(firstInt), new IntWritable(secondInt));
+	}
+	
+	public IntPair(IntWritable firstInt, IntWritable secondInt) {
 		set(firstInt, secondInt);
 	}
 	
-	public void set(int first, int second) {
+	public void set(IntWritable first, IntWritable second) {
 		firstInt = first;
 		secondInt = second;
 	}
 	
-	public int getFirst() {
+	public IntWritable getFirst() {
 		return firstInt;
 	}
 	
-	public int getSecond() {
+	public IntWritable getSecond() {
 		return secondInt;
 	}
 	
 	@Override
 	public void write(DataOutput out) throws IOException {
-		out.writeInt(firstInt);
-		out.writeInt(secondInt);
+		firstInt.write(out);	
+		secondInt.write(out);
 	}
 
 	@Override
 	public void readFields(DataInput in) throws IOException {
-		// TODO Auto-generated method stub
-		firstInt = in.readInt();
-		secondInt = in.readInt();
+//		firstInt.readFields(in);
+//		secondInt.readFields(in);
+		firstInt = new IntWritable(in.readInt());
+		secondInt = new IntWritable(in.readInt());
 	}
 	
 	@Override
 	public int compareTo(IntPair otherPair) {
 		//sort count in reverse order and id in natural order
-		if (getFirst() != otherPair.getFirst()) {
-			return Integer.compare(getFirst(), otherPair.getFirst()) * -1;
+		if (!firstInt.equals(otherPair.getFirst())) {
+			return firstInt.compareTo(otherPair.getFirst()) * -1;
 		} else {
-			return Integer.compare(getSecond(), otherPair.getSecond()); // SKILL LEVEL?
+			return secondInt.compareTo(otherPair.getSecond()); // SKILL LEVEL?
 		}
 	}
 	
+	@Override
+	public int hashCode() {
+		return firstInt.hashCode() + secondInt.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object otherPair) {
+		if (otherPair instanceof IntPair) {
+			return firstInt.equals(((IntPair)otherPair).getFirst()) && secondInt.equals(((IntPair) otherPair).getSecond());
+		}
+		return false; 
+	}
+	
+	@Override
 	public String toString() {
-		return firstInt + "\t" + secondInt;
+		//for TextOutputFormat compliance
+		return firstInt.toString() + "\t" + secondInt.toString();
 	}
 }

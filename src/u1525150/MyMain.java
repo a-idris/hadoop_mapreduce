@@ -58,6 +58,7 @@ public class MyMain extends Configured implements Tool {
 		countJob.setInputFormatClass(TextInputFormat.class);
 		countJob.setOutputKeyClass(IntWritable.class);
 		countJob.setOutputValueClass(IntWritable.class);
+		//use SequenceFileOutputFormat since it's more efficient for chaining
 		countJob.setOutputFormatClass(SequenceFileOutputFormat.class);
 		
 		FileInputFormat.addInputPath(countJob, new Path(args[3]));
@@ -66,10 +67,10 @@ public class MyMain extends Configured implements Tool {
 		boolean countSuccess = countJob.waitForCompletion(true);
 		boolean sortSuccess = false;
 		
-		if (!countSuccess) {
+		if (countSuccess) {
 			countJob.isSuccessful();
 			@SuppressWarnings("deprecation")
-			Job sortJob = new Job(new Configuration(getConf()));
+			Job sortJob = new Job(conf);
 			sortJob.setJobName("MyMapReduce.sort");
 			sortJob.setJarByClass(MyMain.class);
 			
@@ -79,8 +80,8 @@ public class MyMain extends Configured implements Tool {
 			//the output of the reducer will be of KeyValueTextInputFormat
 			sortJob.setInputFormatClass(SequenceFileInputFormat.class);
 			// map outputs and reducer outputs don't match
-//			sortJob.setMapOutputKeyClass(IntWritable.class);
-//			sortJob.setMapOutputValueClass(IntWritable.class);
+			sortJob.setMapOutputKeyClass(IntPair.class);
+			sortJob.setMapOutputValueClass(NullWritable.class);
 			sortJob.setOutputKeyClass(IntWritable.class);
 			sortJob.setOutputValueClass(IntWritable.class);
 			sortJob.setOutputFormatClass(TextOutputFormat.class);
@@ -96,7 +97,7 @@ public class MyMain extends Configured implements Tool {
 		if (countSuccess && sortSuccess) {
 			//don't return, wait until completion.
 			//parse outdir files, merging and printing.
-			generateTopN(resultDir, conf);
+			//generateTopN(resultDir, conf);
 			return 0; //success
 		}
 		return 1; //failure
@@ -144,11 +145,11 @@ public class MyMain extends Configured implements Tool {
 			for (BufferedReader br: openFiles) {
 				String line = br.readLine();
 				int revisionCount = parseRevisionCount(line);
-				if ()
+//				if ()
 				max = Math.max(max, revisionCount);
 			}
-		} catch() {
-			
+		} catch(Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
