@@ -8,10 +8,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mapreduce.lib.input.*;
+import org.apache.hadoop.mapreduce.lib.output.*;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
@@ -36,27 +34,60 @@ public class MyMain extends Configured implements Tool {
 		
 		// create the a job to run the code
 		@SuppressWarnings("deprecation")
-		Job job =new Job(conf);
-		job.setJobName("MyMapReduce");
-		job.setJarByClass(MyMain.class);
+		Job countJob =new Job(conf);
+		countJob.setJobName("MyMapReduce.count");
+		countJob.setJarByClass(MyMain.class);
 		
 		// declare the mapper, the reducer, the combiner and partitioner to be used.
-		job.setMapperClass(MyMapper.class);
-		job.setReducerClass(MyReducer.class);
+		countJob.setMapperClass(MyMapper.class);
+		countJob.setReducerClass(MyReducer.class);
 		//job.setCombinerClass(MyReducer.class);
 		//job.setPartitionerClass(MyPartitioner.class);
 		
-		job.setInputFormatClass(TextInputFormat.class);
-		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(IntWritable.class);
-		job.setOutputFormatClass(TextOutputFormat.class);
+		countJob.setInputFormatClass(TextInputFormat.class);
+		countJob.setOutputKeyClass(Text.class);
+		countJob.setOutputValueClass(IntWritable.class);
+		countJob.setOutputFormatClass(SequenceFileOutputFormat.class);
 		
-		FileInputFormat.addInputPath(job, new Path(args[3]));
-		FileOutputFormat.setOutputPath(job, new Path(args[4]));
+		FileInputFormat.addInputPath(countJob, new Path(args[3]));
+		Path tempDir = new Path(args[4] + "/temp");
+		FileOutputFormat.setOutputPath(countJob, tempDir);
 								
-		return job.waitForCompletion(true) ? 0 : 1;
-		//don't return, wait until completion.
-		//parse outdir files, merging and printing.
+		boolean countSuccess = countJob.waitForCompletion(true);
+		boolean sortSuccess = false;
+		
+		if (countSuccess) {
+			countJob.isSuccessful();
+			@SuppressWarnings("deprecation")
+			Job sortJob = new Job(new Configuration(getConf()));
+			sortJob.setJobName("MyMapReduce.sort");
+			sortJob.setJarByClass(MyMain.class);
+			
+			sortJob.setMapperClass(TopNMapper.class);
+			sortJob.setReducerClass(TopNReducer.class);
+			
+			//the output of the reducer will be of KeyValueTextInputFormat
+			sortJob.setInputFormatClass(SequenceFileInputFormat.class);
+			// map outputs and reducer outputs don't match
+			sortJob.setMapOutputKeyClass(IntWritable.class);
+			sortJob.setMapOutputValueClass(Text.class);
+			sortJob.setOutputKeyClass(Text.class);
+			sortJob.setOutputValueClass(IntWritable.class);
+			sortJob.setOutputFormatClass(TextOutputFormat.class);
+			
+			FileInputFormat.addInputPath(sortJob, tempDir);
+			Path resultDir = new Path(args[4] + "/results");
+			FileOutputFormat.setOutputPath(sortJob, resultDir);
+			
+			sortSuccess = sortJob.waitForCompletion(true);
+		} 
+		
+		if (countSuccess && sortSuccess) {
+			//don't return, wait until completion.
+			//parse outdir files, merging and printing.
+			return 0; //success
+		}
+		return 1; //failure
 		
 	}
 
