@@ -5,8 +5,7 @@ import java.text.SimpleDateFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.*;
 import org.apache.hadoop.mapreduce.lib.output.*;
@@ -45,7 +44,7 @@ public class MyMain extends Configured implements Tool {
 		//job.setPartitionerClass(MyPartitioner.class);
 		
 		countJob.setInputFormatClass(TextInputFormat.class);
-		countJob.setOutputKeyClass(Text.class);
+		countJob.setOutputKeyClass(IntWritable.class);
 		countJob.setOutputValueClass(IntWritable.class);
 		countJob.setOutputFormatClass(SequenceFileOutputFormat.class);
 		
@@ -69,9 +68,9 @@ public class MyMain extends Configured implements Tool {
 			//the output of the reducer will be of KeyValueTextInputFormat
 			sortJob.setInputFormatClass(SequenceFileInputFormat.class);
 			// map outputs and reducer outputs don't match
-			sortJob.setMapOutputKeyClass(IntWritable.class);
-			sortJob.setMapOutputValueClass(Text.class);
-			sortJob.setOutputKeyClass(Text.class);
+//			sortJob.setMapOutputKeyClass(IntWritable.class);
+//			sortJob.setMapOutputValueClass(IntWritable.class);
+			sortJob.setOutputKeyClass(IntWritable.class);
 			sortJob.setOutputValueClass(IntWritable.class);
 			sortJob.setOutputFormatClass(TextOutputFormat.class);
 			

@@ -9,9 +9,9 @@ import java.text.SimpleDateFormat;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.conf.Configuration;
 
-public class MyMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+public class MyMapper extends Mapper<LongWritable, Text, IntWritable, IntWritable> {
 	@Override
-	protected void map(LongWritable key, Text value, Mapper<LongWritable, Text, Text, IntWritable>.Context context) 
+	protected void map(LongWritable key, Text value, Mapper<LongWritable, Text, IntWritable, IntWritable>.Context context) 
 			throws IOException, InterruptedException {
 		
 		Configuration conf = context.getConfiguration();
@@ -48,7 +48,10 @@ public class MyMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 			if (ts.after(startTimestamp) && ts.before(endTimestamp)) {
 				//get user_id
 				String userIdStr = tokens[6];
-				context.write(new Text(userIdStr), new IntWritable(1));
+				if (!userIdStr.startsWith("ip")) {
+					int userId = Integer.parseInt(userIdStr);
+					context.write(new IntWritable(userId), new IntWritable(1));
+				}
 			}
 		}
 	}
