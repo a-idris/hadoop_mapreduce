@@ -54,9 +54,9 @@ public class IntPair implements WritableComparable<IntPair> {
 	public int compareTo(IntPair otherPair) {
 		//sort count in reverse order and id in natural order
 		if (!firstInt.equals(otherPair.getFirst())) {
-			return firstInt.compareTo(otherPair.getFirst()) * -1;
+			return firstInt.compareTo(otherPair.getFirst()) * -1; //sorts in descending order
 		} else {
-			return secondInt.compareTo(otherPair.getSecond()); // SKILL LEVEL?
+			return secondInt.compareTo(otherPair.getSecond()); //sorts in ascending order
 		}
 	}
 	

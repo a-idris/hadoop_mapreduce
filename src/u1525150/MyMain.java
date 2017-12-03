@@ -52,7 +52,7 @@ public class MyMain extends Configured implements Tool {
 		// declare the mapper, the reducer, the combiner and partitioner to be used.
 		countJob.setMapperClass(MyMapper.class);
 		countJob.setReducerClass(MyReducer.class);
-		//job.setCombinerClass(MyReducer.class);
+		countJob.setCombinerClass(MyReducer.class);
 		//job.setPartitionerClass(MyPartitioner.class);
 		
 		countJob.setInputFormatClass(TextInputFormat.class);
@@ -95,68 +95,12 @@ public class MyMain extends Configured implements Tool {
 		} 
 		
 		if (countSuccess && sortSuccess) {
-			//don't return, wait until completion.
-			//parse outdir files, merging and printing.
-			//generateTopN(resultDir, conf);
+			//parse resultdir files, and generate topN file
+			Merger.generateTopN(resultDir, conf);
 			return 0; //success
 		}
 		return 1; //failure
 		
-	}
-	
-	public void generateTopN(Path resultDir, Configuration conf) {
-		try {
-			FileSystem fs = FileSystem.get(resultDir.toUri(), conf);
-			
-			RemoteIterator<LocatedFileStatus> it = fs.listFiles(resultDir, false); 
-			List<BufferedReader> resultFiles = new ArrayList<>();
-			while (it.hasNext()) {
-				LocatedFileStatus fileStatus = it.next();
-				FSDataInputStream inStream = fs.open(fileStatus.getPath());
-				// convert to buffered reader
-				BufferedReader br = new BufferedReader(new InputStreamReader(inStream));
-				resultFiles.add(br);
-			}
-			
-			merge(fs, resultFiles);
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void merge(FileSystem fs, List<BufferedReader> openFiles) {
-		FSDataOutputStream resultFile;
-		try {
-			 resultFile = fs.create(new Path("topN"));
-		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		//sorted K
-		//efficient data structure
-		try {
-			//init pass
-			int max = Integer.MIN_VALUE;
-			for (BufferedReader br: openFiles) {
-				String line = br.readLine();
-				int revisionCount = parseRevisionCount(line);
-//				if ()
-				max = Math.max(max, revisionCount);
-			}
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private int parseRevisionCount(String record) {
-		String[] fields = record.split("\t");
-		String revisionCount = fields[1];
-		return Integer.parseInt(revisionCount);
 	}
 
 	public static void main(String[] args) throws Exception {
