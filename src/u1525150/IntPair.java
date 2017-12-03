@@ -44,19 +44,19 @@ public class IntPair implements WritableComparable<IntPair> {
 
 	@Override
 	public void readFields(DataInput in) throws IOException {
-//		firstInt.readFields(in);
-//		secondInt.readFields(in);
 		firstInt = new IntWritable(in.readInt());
 		secondInt = new IntWritable(in.readInt());
 	}
 	
 	@Override
 	public int compareTo(IntPair otherPair) {
-		//sort count in reverse order and id in natural order
+		//sort count in reverse order and then id in natural order
 		if (!firstInt.equals(otherPair.getFirst())) {
-			return firstInt.compareTo(otherPair.getFirst()) * -1; //sorts in descending order
+			//sorts in descending order by reversing natural order
+			return firstInt.compareTo(otherPair.getFirst()) * -1; 
 		} else {
-			return secondInt.compareTo(otherPair.getSecond()); //sorts in ascending order
+			// if the firstInt's are equal, sort by secondInt in ascending order
+			return secondInt.compareTo(otherPair.getSecond()); 
 		}
 	}
 	

@@ -1,19 +1,10 @@
 package u1525150;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
-import java.util.*;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.*;
@@ -51,15 +42,15 @@ public class MyMain extends Configured implements Tool {
 		
 		// create the a job to run the code
 		@SuppressWarnings("deprecation")
-		Job countJob = new Job(conf);
+		Job countJob =new Job(conf);
 		countJob.setJobName("MyMapReduce.count");
 		countJob.setJarByClass(MyMain.class);
 		
 		// declare the mapper, the reducer, the combiner and partitioner to be used.
-		countJob.setMapperClass(MyMapper.class);
-		countJob.setReducerClass(MyReducer.class);
-		countJob.setCombinerClass(MyReducer.class);
-		//job.setPartitionerClass(MyPartitioner.class);
+		countJob.setMapperClass(UserIdMapper.class);
+		countJob.setReducerClass(CountReducer.class);
+		//countJob.setCombinerClass(CountReducer.class);
+		//countJob.setPartitionerClass(MyPartitioner.class);
 		
 		countJob.setInputFormatClass(TextInputFormat.class);
 		countJob.setOutputKeyClass(IntWritable.class);

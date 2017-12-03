@@ -61,9 +61,9 @@ public class Merger {
 			for (BufferedReader br: openFiles) {
 				String line = br.readLine();
 				String[] fields = line.split("\t");
-				int userId = Integer.valueOf(fields[0]);
+				int id = Integer.valueOf(fields[0]);
 				int revisionCount = Integer.valueOf(fields[1]);
-				FileHead fileHead = new FileHead(userId, revisionCount, br); 
+				FileHead fileHead = new FileHead(id, revisionCount, br); 
 				pq.offer(fileHead);
 			}
 			
@@ -81,9 +81,9 @@ public class Merger {
 				//the line may be null in case have read the whole output file, which stores only n records. only happens if all topN records are in one output file
 				if (line != null) {
 					String[] fields = line.split("\t");
-					int userId = Integer.valueOf(fields[0]);
+					int id = Integer.valueOf(fields[0]);
 					int revisionCount = Integer.valueOf(fields[1]);
-					pq.offer(new FileHead(userId, revisionCount, br));	
+					pq.offer(new FileHead(id, revisionCount, br));	
 				}
 			}
 			
@@ -105,24 +105,24 @@ public class Merger {
 }
 
 class FileHead implements Comparable<FileHead>{
-	private int userId;
+	private int id;
 	private int revisionCount;
-	private IntPair revisionUserIdPair;
+	private IntPair revisionIdPair;
 	private BufferedReader bufferedReader;
 	
-	public FileHead(int userId, int revisionCount, BufferedReader br) {
-		this.userId = userId;
+	public FileHead(int id, int revisionCount, BufferedReader br) {
+		this.id = id;
 		this.revisionCount = revisionCount;
-		this.revisionUserIdPair= new IntPair(revisionCount, userId);
+		this.revisionIdPair= new IntPair(revisionCount, id);
 		this.bufferedReader = br;
 	}
 	
-	public IntPair getRevisionUserIdPair() {
-		return revisionUserIdPair;
+	public IntPair getRevisionIdPair() {
+		return revisionIdPair;
 	}
 	
 	public int getRevisionCount() {
-		return userId;
+		return id;
 	}
 	
 	public BufferedReader getBufferedReader() {
@@ -130,12 +130,12 @@ class FileHead implements Comparable<FileHead>{
 	}
 
 	public String getLine() {
-		return userId + "\t" + revisionCount;
+		return id + "\t" + revisionCount;
 	}
 	
 	@Override
 	public int compareTo(FileHead fileHead) {
-		//use IntPair compareTo, which sorts descendingly on revision count then ascendingly on user id
-		return revisionUserIdPair.compareTo(fileHead.getRevisionUserIdPair());
+		//use IntPair compareTo, which sorts descendingly on revision count then ascendingly on id
+		return revisionIdPair.compareTo(fileHead.getRevisionIdPair());
 	}
 }

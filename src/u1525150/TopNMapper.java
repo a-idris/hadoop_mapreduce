@@ -11,13 +11,11 @@ class TopNMapper extends Mapper<IntWritable, IntWritable, IntPair, NullWritable>
 	
 	//naive
 	
-/*	protected void map(IntWritable userId, IntWritable totalRevisions, Mapper<IntWritable, IntWritable, IntPair, NullWritable>.Context context) 
+/*	protected void map(IntWritable id, IntWritable totalRevisions, Mapper<IntWritable, IntWritable, IntPair, NullWritable>.Context context) 
 			throws IOException, InterruptedException {
-		//not sorted by user_id lexocg. can make composite key (key,value), empty_val. so that it will take care of sorting
-		//possible: complex data type. key = pair (total_revisions, user_id). would need to implement own partitioner.
-		//intpair sorts by first IntWritable in descending order and then second IntWritable in ascending order
-		IntPair intPair = new IntPair(totalRevisions, userId);
-		context.write(intPair, NullWritable.get());
+		//intpair sorts by first IntWritable arg in descending order and then by second IntWritable in ascending order
+		IntPair revisionIdPair = new IntPair(totalRevisions, id);
+		context.write(revisionIdPair, NullWritable.get());
 	}*/
 	
 	PriorityQueue<Integer> topNFound;
@@ -34,7 +32,7 @@ class TopNMapper extends Mapper<IntWritable, IntWritable, IntPair, NullWritable>
 		topNFound.offer(0); // add value to not need null check in map
 	}
 
-	protected void map(IntWritable userId, IntWritable totalRevisions, Mapper<IntWritable, IntWritable, IntPair, NullWritable>.Context context) 
+	protected void map(IntWritable id, IntWritable totalRevisions, Mapper<IntWritable, IntWritable, IntPair, NullWritable>.Context context) 
 			throws IOException, InterruptedException {		
 		//only consider processing further if totalRevisions is greater than the top N revision counts encountered so far
 		if (totalRevisions.get() >= topNFound.peek().intValue()) {
@@ -43,18 +41,10 @@ class TopNMapper extends Mapper<IntWritable, IntWritable, IntPair, NullWritable>
 			}
 			topNFound.offer(Integer.valueOf(totalRevisions.get()));
 			
-			//intpair sorts by first IntWritable in descending order and then second IntWritable in ascending order
-			IntPair intPair = new IntPair(totalRevisions, userId);
-			context.write(intPair, NullWritable.get());	
+			//intpair sorts by first IntWritable arg in descending order and then by second IntWritable in ascending order
+			IntPair revisionIdPair = new IntPair(totalRevisions, id);
+			//NullWritable as value since don't need any more info
+			context.write(revisionIdPair, NullWritable.get());	
 		}
 	}
-	
-/*	@Override
-	protected void cleanup(Mapper<IntWritable, IntWritable, IntPair, NullWritable>.Context context)
-			throws IOException, InterruptedException {
-		super.cleanup(context);
-
-		
-		
-	}*/
 }

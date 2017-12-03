@@ -26,9 +26,9 @@ class TopNReducer extends Reducer<IntPair, NullWritable, IntWritable, IntWritabl
 			Reducer<IntPair, NullWritable, IntWritable, IntWritable>.Context context) throws IOException, InterruptedException {
 		//stop writing after n lines have been passed.
 		if (count++ < n) {
-			IntWritable userId = compositeKey.getSecond();
+			IntWritable id = compositeKey.getSecond();
 			IntWritable totalRevisions = compositeKey.getFirst();
-			context.write(userId, totalRevisions);				
+			context.write(id, totalRevisions);				
 		}
 	}
 }

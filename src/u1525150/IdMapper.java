@@ -1,19 +1,20 @@
 package u1525150;
 
-import org.apache.hadoop.mapreduce.Mapper;
-
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.*;
 
-import org.apache.hadoop.io.*;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
 
-public class MyMapper extends Mapper<LongWritable, Text, IntWritable, IntWritable> {
-	/*
-	 * NAIVE IMPL
-	 * 
+
+public abstract class IdMapper extends Mapper<LongWritable, Text, IntWritable, IntWritable> {
+		
+//		 NAIVE IMPL
+	 
 	@Override
 	protected void map(LongWritable key, Text value, Mapper<LongWritable, Text, IntWritable, IntWritable>.Context context) 
 			throws IOException, InterruptedException {
@@ -50,17 +51,16 @@ public class MyMapper extends Mapper<LongWritable, Text, IntWritable, IntWritabl
 			
 			//only pass to reducer if between time bounds
 			if (ts.after(startTimestamp) && ts.before(endTimestamp)) {
-				//get user_id
-				String userIdStr = tokens[6];
-				if (!userIdStr.startsWith("ip")) {
-					int userId = Integer.parseInt(userIdStr);
-					context.write(new IntWritable(userId), new IntWritable(1));
-				}
+				// id specific func
+				extractAndApply(tokens, context);
 			}
 		}
 	}
-	*/
 	
+	// id specific function to apply after other conditions have been filtered
+	public abstract void extractAndApply(String[] tokens, Context context) throws IOException, InterruptedException;
+	
+	/*
 	Timestamp startTimestamp, endTimestamp;
 	Map<Integer, Integer> accumulatedRevisions;
 	
@@ -107,13 +107,9 @@ public class MyMapper extends Mapper<LongWritable, Text, IntWritable, IntWritabl
 			
 			//only pass to reducer if between time bounds
 			if (ts.after(startTimestamp) && ts.before(endTimestamp)) {
-				//get user_id, discarding anonymous ip user_ids
-				String userIdStr = tokens[6];
-				if (!userIdStr.startsWith("ip")) {
-					int userId = Integer.parseInt(userIdStr);
-					// set revision count to 1 if user_id not in map, else store incremented present value 
-					accumulatedRevisions.compute(userId, (uidKey, revisionCount) -> revisionCount == null ? 1 : ++revisionCount);
-				}
+			
+				extractAndApply(tokens, context, accumulatedRevisions);
+
 			}
 		}
 	}
@@ -127,5 +123,5 @@ public class MyMapper extends Mapper<LongWritable, Text, IntWritable, IntWritabl
 		for (Map.Entry<Integer, Integer> entry : accumulatedRevisions.entrySet()) {
 			context.write(new IntWritable(entry.getKey().intValue()), new IntWritable(entry.getValue().intValue())); 
 		}
-	}	
+	}	*/
 }
