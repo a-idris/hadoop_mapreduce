@@ -8,21 +8,22 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 class TopNReducer extends Reducer<IntPair, NullWritable, IntWritable, IntWritable> {
 	
-	int count = 0;
-	int n = Integer.MIN_VALUE;
+	int count;
+	int n;
+	
+	@Override
+	protected void setup(Reducer<IntPair, NullWritable, IntWritable, IntWritable>.Context context)
+			throws IOException, InterruptedException {
+		super.setup(context);
+		// on first call, set N.
+		Configuration conf = context.getConfiguration();
+		n = conf.getInt("N_number", -1);
+		count = 0;
+	}
 	
 	@Override
 	protected void reduce(IntPair compositeKey, Iterable<NullWritable> empty,
 			Reducer<IntPair, NullWritable, IntWritable, IntWritable>.Context context) throws IOException, InterruptedException {
-		// on first call, set N.
-		if (n == Integer.MIN_VALUE) {
-			Configuration conf = context.getConfiguration();
-			n = conf.getInt("N_number", -1);			
-			if (n == -1) {
-				throw new IOException("invalid N");
-			}
-		}
-		
 		//stop writing after n lines have been passed.
 		if (count++ < n) {
 			IntWritable userId = compositeKey.getSecond();

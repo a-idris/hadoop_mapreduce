@@ -36,17 +36,17 @@ public class Merger {
 			}
 			
 			int n = conf.getInt("N_number", 0);
-			merge(n, fs, resultFiles);
+			merge(n, fs, resultDir, resultFiles);
 			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 	
-	private static void merge(int n, FileSystem fs, List<BufferedReader> openFiles) {
+	private static void merge(int n, FileSystem fs, Path parentDir, List<BufferedReader> openFiles) {
 		FSDataOutputStream resultFile = null;
 		try {
-			 resultFile = fs.create(new Path("topN"));
+			 resultFile = fs.create(new Path(parentDir, "topN"));
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -56,12 +56,14 @@ public class Merger {
 		PriorityQueue<FileHead> pq;
 		try {
 			// create PriorityQueue that orders descendingly the FileHead values, which compare based on revisionCount 
-			pq = new PriorityQueue<FileHead>(n, (fh1, fh2) -> -1 * fh1.compareTo(fh2));
+			pq = new PriorityQueue<FileHead>(n); //, (fh1, fh2) -> fh1.compareTo(fh2)
 			//initial pass
 			for (BufferedReader br: openFiles) {
 				String line = br.readLine();
-				int revisionCount = parseRevisionCount(line);
-				FileHead fileHead = new FileHead(revisionCount, line, br); 
+				String[] fields = line.split("\t");
+				int userId = Integer.valueOf(fields[0]);
+				int revisionCount = Integer.valueOf(fields[1]);
+				FileHead fileHead = new FileHead(userId, revisionCount, br); 
 				pq.offer(fileHead);
 			}
 			
@@ -78,39 +80,49 @@ public class Merger {
 				String line = br.readLine();
 				//the line may be null in case have read the whole output file, which stores only n records. only happens if all topN records are in one output file
 				if (line != null) {
-					int revisionCount = parseRevisionCount(line);
-					pq.offer(new FileHead(revisionCount, line, br));	
+					String[] fields = line.split("\t");
+					int userId = Integer.valueOf(fields[0]);
+					int revisionCount = Integer.valueOf(fields[1]);
+					pq.offer(new FileHead(userId, revisionCount, br));	
 				}
 			}
 			
+			//clean up
 			resultFile.close();
+			for (BufferedReader br: openFiles) {
+				br.close();
+			}
 		} catch(Exception e) {
 			e.printStackTrace();
-		}
-
-	}
-	
-	private static int parseRevisionCount(String record) {
-		//TextOutputFormat has \t as delimiter
-		String[] fields = record.split("\t");
-		String revisionCount = fields[1];
-		return Integer.parseInt(revisionCount);
+		} /*finally {
+			//clean up
+			resultFile.close();
+			for (BufferedReader br: openFiles) {
+				br.close();
+			}
+		}*/
 	}
 }
 
 class FileHead implements Comparable<FileHead>{
+	private int userId;
 	private int revisionCount;
+	private IntPair revisionUserIdPair;
 	private BufferedReader bufferedReader;
-	private String line;
 	
-	public FileHead(int revisionCount, String line, BufferedReader br) {
+	public FileHead(int userId, int revisionCount, BufferedReader br) {
+		this.userId = userId;
 		this.revisionCount = revisionCount;
-		this.line = line;
+		this.revisionUserIdPair= new IntPair(revisionCount, userId);
 		this.bufferedReader = br;
 	}
 	
+	public IntPair getRevisionUserIdPair() {
+		return revisionUserIdPair;
+	}
+	
 	public int getRevisionCount() {
-		return revisionCount;
+		return userId;
 	}
 	
 	public BufferedReader getBufferedReader() {
@@ -118,34 +130,12 @@ class FileHead implements Comparable<FileHead>{
 	}
 
 	public String getLine() {
-		return line;
+		return userId + "\t" + revisionCount;
 	}
 	
 	@Override
 	public int compareTo(FileHead fileHead) {
-		return Integer.valueOf(revisionCount).compareTo(((FileHead) fileHead).getRevisionCount());
+		//use IntPair compareTo, which sorts descendingly on revision count then ascendingly on user id
+		return revisionUserIdPair.compareTo(fileHead.getRevisionUserIdPair());
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

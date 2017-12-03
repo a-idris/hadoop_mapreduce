@@ -21,6 +21,9 @@ import org.apache.hadoop.mapreduce.lib.output.*;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+//class UserRevisionRank
+//class ArticleRevisionRank
+
 public class MyMain extends Configured implements Tool {
 
 	@Override
@@ -30,22 +33,25 @@ public class MyMain extends Configured implements Tool {
 		//conf.set("mapred.jar", "/hadoop_workspace/example.jar");
 		
 		// deal with the arguments from command line
-		int N = Integer.parseInt(args[0]);
-		SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
-		long ts0=simpleDateFormat.parse(args[1]).getTime();
-		long ts1=simpleDateFormat.parse(args[2]).getTime();
+		int n = Integer.parseInt(args[0]);
+		if (n <= 0) {
+			return 0; //no need to process process if 0 length output
+		}
 		
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+		long ts0 = simpleDateFormat.parse(args[1]).getTime();
+		long ts1 = simpleDateFormat.parse(args[2]).getTime();
 		// store the arguments to the configuration, then each mapper and reducer can get access to them
-		conf.setLong("start_timestamp",ts0);
-		conf.setLong("end_timestamp",ts1);
-		conf.setInt("N_number",N);
+		conf.setLong("start_timestamp", ts0);
+		conf.setLong("end_timestamp", ts1);
+		conf.setInt("N_number", n);
 		
 		Path tempDir = new Path(args[4] + "/temp");
 		Path resultDir = new Path(args[4] + "/results");
 		
 		// create the a job to run the code
 		@SuppressWarnings("deprecation")
-		Job countJob =new Job(conf);
+		Job countJob = new Job(conf);
 		countJob.setJobName("MyMapReduce.count");
 		countJob.setJarByClass(MyMain.class);
 		
