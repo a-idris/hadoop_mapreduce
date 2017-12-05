@@ -6,6 +6,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.*;
+import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.*;
 import org.apache.hadoop.mapreduce.lib.output.*;
@@ -21,12 +22,12 @@ public class MyMain extends Configured implements Tool {
 	public int run(String[] args) throws Exception {
 		Configuration conf = new Configuration(getConf());
 		//conf.addResource(new Path("/local/bd4/bd4-hadoop-ug/conf/core-site.xml"));
-		//conf.set("mapred.jar", "/hadoop_workspace/example.jar");
+		conf.set("wiki_mapred.jar", "/home                                                                                                                                                                             /example.jar");
 		
 		// deal with the arguments from command line
 		int n = Integer.parseInt(args[0]);
 		if (n <= 0) {
-			return 0; //no need to process process if 0 length output
+			return 0; //no need to process process if 0 length output(FileOutupt);
 		}
 		
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
@@ -47,7 +48,7 @@ public class MyMain extends Configured implements Tool {
 		countJob.setJarByClass(MyMain.class);
 		
 		// declare the mapper, the reducer, the combiner and partitioner to be used.
-		countJob.setMapperClass(UserIdMapper.class);
+		countJob.setMapperClass(ArticleIdMapper.class);
 		countJob.setReducerClass(CountReducer.class);
 		//countJob.setCombinerClass(CountReducer.class);
 		//countJob.setPartitionerClass(MyPartitioner.class);
@@ -57,9 +58,12 @@ public class MyMain extends Configured implements Tool {
 		countJob.setOutputValueClass(IntWritable.class);
 		//use SequenceFileOutputFormat since it's more efficient for chaining
 		countJob.setOutputFormatClass(SequenceFileOutputFormat.class);
+		SequenceFileOutputFormat.setCompressOutput(countJob, true);
+		SequenceFileOutputFormat.setOutputCompressionType(countJob, CompressionType.BLOCK);
 		
 		FileInputFormat.addInputPath(countJob, new Path(args[3]));
-		FileOutputFormat.setOutputPath(countJob, tempDir);
+		SequenceFileOutputFormat.setOutputPath(countJob, tempDir);
+		
 								
 		boolean countSuccess = countJob.waitForCompletion(true);
 		boolean sortSuccess = false;
@@ -101,7 +105,11 @@ public class MyMain extends Configured implements Tool {
 	}
 
 	public static void main(String[] args) throws Exception {
-		System.exit(ToolRunner.run(new MyMain(), args));
-
+		//Timing code
+		long startTime = System.currentTimeMillis();
+		int status = ToolRunner.run(new MyMain(), args);
+		long stopTime = System.currentTimeMillis();
+		System.out.format("Time taken: %d ms\n", stopTime - startTime);
+		System.exit(status);
 	}
 }

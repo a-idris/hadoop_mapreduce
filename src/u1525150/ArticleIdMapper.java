@@ -1,7 +1,7 @@
 package u1525150;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.*;
 
 import org.apache.hadoop.io.IntWritable;
 
@@ -15,7 +15,7 @@ public class ArticleIdMapper extends IdMapper {
 	}
 	
 	//in mapper combining impl
-	public void extractAndApply(String[] tokens, Context context, HashMap<Integer, Integer> accumulatedRevisions) {
+	public void processId(String[] tokens, Context context, Map<Integer, Integer> accumulatedRevisions) {
 		String articleIdStr = tokens[1];
 		int articleId = Integer.parseInt(articleIdStr);
 		// set revision count to 1 if user_id not in map, else store incremented present value 

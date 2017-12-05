@@ -18,11 +18,16 @@ public class UserIdMapper extends IdMapper {
 	}
 	
 	//in mapper combining impl
-	public void extractAndApply(String[] tokens, Context context, HashMap<Integer, Integer> accumulatedRevisions) {
+	public void processId(String[] tokens, Context context, Map<Integer, Integer> accumulatedRevisions) {
 		//get user_id, discarding anonymous ip user_ids
 		String userIdStr = tokens[6];
 		if (!userIdStr.startsWith("ip")) {
-			int userId = Integer.parseInt(userIdStr);
+			int userId = 0;
+			try {
+				userId = Integer.parseInt(userIdStr);
+			} catch(NumberFormatException e) {
+				return;
+			}
 			// set revision count to 1 if user_id not in map, else store incremented present value 
 			accumulatedRevisions.compute(userId, (uidKey, revisionCount) -> revisionCount == null ? 1 : ++revisionCount);
 		}
