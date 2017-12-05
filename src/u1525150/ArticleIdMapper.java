@@ -8,7 +8,7 @@ import org.apache.hadoop.io.IntWritable;
 public class ArticleIdMapper extends IdMapper {
 	
 	//simple impl
-	public void extractAndApply(String[] tokens, Context context) throws IOException, InterruptedException {
+	public void processId(String[] tokens, Context context) throws IOException, InterruptedException {
 		String articleIdStr = tokens[1];
 		int articleId = Integer.parseInt(articleIdStr);
 		context.write(new IntWritable(articleId), new IntWritable(1));

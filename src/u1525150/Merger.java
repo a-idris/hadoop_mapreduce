@@ -60,6 +60,11 @@ public class Merger {
 			//initial pass
 			for (BufferedReader br: openFiles) {
 				String line = br.readLine();
+				if (line == null) {
+					//empty file
+					br.close();
+					continue;
+				}
 				String[] fields = line.split("\t");
 				int id = Integer.valueOf(fields[0]);
 				int revisionCount = Integer.valueOf(fields[1]);
@@ -68,9 +73,12 @@ public class Merger {
 			}
 			
 			int added = 0;
-			while (added++ < n) {
+			while (added++ < n && !pq.isEmpty()) {
 				//get max FileHead (based on revision count) from all the open reducer output files
 				FileHead max = pq.poll();
+				if (max == null)
+					// in case N exceeds the total number of kv pairs accross all the reducers, return what is written.
+					continue;
 				String recordStr = max.getLine();
 				//write it to the final output file
 				resultFile.writeBytes(recordStr + "\n");

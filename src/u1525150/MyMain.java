@@ -20,9 +20,31 @@ public class MyMain extends Configured implements Tool {
 
 	@Override
 	public int run(String[] args) throws Exception {
+		String id = getConf().get("id");
+		if (id == null)
+			throw new IllegalArgumentException("-D id must be set. Either 'user' or 'article'");
+		
+		long startTime, stopTime;
+		int exitCode = 1;
+		
+		if (id.equals("user")) {
+			startTime = System.currentTimeMillis();
+			exitCode = runJob(args, UserIdMapper.class);
+			stopTime = System.currentTimeMillis();
+			System.out.format("Time taken: %d ms\n", stopTime - startTime);
+		} else if (id.equals("article")) {
+			startTime = System.currentTimeMillis();
+			exitCode = runJob(args, ArticleIdMapper.class);
+			stopTime = System.currentTimeMillis();
+			System.out.format("Time taken: %d ms\n", stopTime - startTime);
+		}
+		return exitCode;
+	}
+	
+	public int runJob(String[] args, Class<? extends IdMapper> jobMapperClass) throws Exception {
 		Configuration conf = new Configuration(getConf());
 		//conf.addResource(new Path("/local/bd4/bd4-hadoop-ug/conf/core-site.xml"));
-		conf.set("wiki_mapred.jar", "/home                                                                                                                                                                             /example.jar");
+//		conf.set("wiki_mapred.jar", "//example.jar");
 		
 		// deal with the arguments from command line
 		int n = Integer.parseInt(args[0]);
@@ -48,10 +70,8 @@ public class MyMain extends Configured implements Tool {
 		countJob.setJarByClass(MyMain.class);
 		
 		// declare the mapper, the reducer, the combiner and partitioner to be used.
-		countJob.setMapperClass(ArticleIdMapper.class);
+		countJob.setMapperClass(jobMapperClass);
 		countJob.setReducerClass(CountReducer.class);
-		//countJob.setCombinerClass(CountReducer.class);
-		//countJob.setPartitionerClass(MyPartitioner.class);
 		
 		countJob.setInputFormatClass(TextInputFormat.class);
 		countJob.setOutputKeyClass(IntWritable.class);
@@ -101,7 +121,6 @@ public class MyMain extends Configured implements Tool {
 			return 0; //success
 		}
 		return 1; //failure
-		
 	}
 
 	public static void main(String[] args) throws Exception {

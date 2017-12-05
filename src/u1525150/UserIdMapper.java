@@ -8,7 +8,7 @@ import org.apache.hadoop.io.*;
 public class UserIdMapper extends IdMapper {
 
 	//simple impl
-	public void extractAndApply(String[] tokens, Context context) throws IOException, InterruptedException {
+	public void processId(String[] tokens, Context context) throws IOException, InterruptedException {
 		//get user_id
 		String userIdStr = tokens[6];
 		if (!userIdStr.startsWith("ip")) {
