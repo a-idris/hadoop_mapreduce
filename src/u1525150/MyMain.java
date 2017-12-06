@@ -69,14 +69,14 @@ public class MyMain extends Configured implements Tool {
 		countJob.setJobName("MyMapReduce.count");
 		countJob.setJarByClass(MyMain.class);
 		
-		// declare the mapper, the reducer, the combiner and partitioner to be used.
+		// declare the mapper, the reducer to be used
 		countJob.setMapperClass(jobMapperClass);
 		countJob.setReducerClass(CountReducer.class);
 		
 		countJob.setInputFormatClass(TextInputFormat.class);
 		countJob.setOutputKeyClass(IntWritable.class);
 		countJob.setOutputValueClass(IntWritable.class);
-		//use SequenceFileOutputFormat since it's more efficient for chaining
+		//use SequenceFileOutputFormat for chaining
 		countJob.setOutputFormatClass(SequenceFileOutputFormat.class);
 		SequenceFileOutputFormat.setCompressOutput(countJob, true);
 		SequenceFileOutputFormat.setOutputCompressionType(countJob, CompressionType.BLOCK);
@@ -98,7 +98,6 @@ public class MyMain extends Configured implements Tool {
 			sortJob.setMapperClass(TopNMapper.class);
 			sortJob.setReducerClass(TopNReducer.class);
 			
-			//the output of the reducer will be of KeyValueTextInputFormat
 			sortJob.setInputFormatClass(SequenceFileInputFormat.class);
 			// map outputs and reducer outputs don't match
 			sortJob.setMapOutputKeyClass(IntPair.class);
