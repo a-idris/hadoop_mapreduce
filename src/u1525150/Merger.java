@@ -102,13 +102,7 @@ public class Merger {
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
-		} /*finally {
-			//clean up
-			resultFile.close();
-			for (BufferedReader br: openFiles) {
-				br.close();
-			}
-		}*/
+		} 
 	}
 }
 
