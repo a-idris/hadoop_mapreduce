@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 
 public abstract class IdMapper extends Mapper<LongWritable, Text, IntWritable, IntWritable> {
-		
+	
 	Timestamp startTimestamp, endTimestamp;
 	Map<Integer, Integer> accumulatedRevisions;
 	
@@ -85,16 +85,9 @@ public abstract class IdMapper extends Mapper<LongWritable, Text, IntWritable, I
 		Configuration conf = context.getConfiguration();
 		//get bounding timestamps
 		long timestamp0 = conf.getLong("start_timestamp", -1);
-		if (timestamp0 == -1) {
-			throw new IOException();
-			
-		} 
 		Timestamp startTimestamp = new Timestamp(timestamp0);	
 		
 		long timestamp1 = conf.getLong("end_timestamp", -1);
-		if (timestamp1 == -1) {
-			throw new IOException();		
-		}
 		Timestamp endTimestamp = new Timestamp(timestamp1);
 		
 		String line = value.toString();
@@ -115,12 +108,12 @@ public abstract class IdMapper extends Mapper<LongWritable, Text, IntWritable, I
 			//only pass to reducer if between time bounds
 			if (ts.after(startTimestamp) && ts.before(endTimestamp)) {
 				// id specific func
-				extractAndApply(tokens, context);
+				processId(tokens, context);
 			}
 		}
 	}
 	
 	// id specific function to apply after other conditions have been filtered
-	public abstract void extractAndApply(String[] tokens, Context context) throws IOException, InterruptedException;
+	public abstract void processId(String[] tokens, Context context) throws IOException, InterruptedException;
 	*/
 }

@@ -1,0 +1,10 @@
+Needs to have exported HADOOP_CLASSPATH=./wiki_mapred.jar
+
+To launch, for finding most active users:
+> hadoop u1525150.MyMain -d id=user N ts0 ts1 input output 
+For most revised articles:
+> hadoop u1525150.MyMain -d id=article N ts0 ts1 input output 
+
+The result file will be:
+output/results/topN 
+

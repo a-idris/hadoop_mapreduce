@@ -22,7 +22,7 @@ public class MyMain extends Configured implements Tool {
 	public int run(String[] args) throws Exception {
 		String id = getConf().get("id");
 		if (id == null)
-			throw new IllegalArgumentException("-D id must be set. Either 'user' or 'article'");
+			throw new IllegalArgumentException("-D id must be set to either 'user' or 'article'");
 		
 		long startTime, stopTime;
 		int exitCode = 1;
@@ -124,11 +124,6 @@ public class MyMain extends Configured implements Tool {
 	}
 
 	public static void main(String[] args) throws Exception {
-		//Timing code
-		long startTime = System.currentTimeMillis();
-		int status = ToolRunner.run(new MyMain(), args);
-		long stopTime = System.currentTimeMillis();
-		System.out.format("Time taken: %d ms\n", stopTime - startTime);
-		System.exit(status);
+		System.exit(ToolRunner.run(new MyMain(), args));
 	}
 }
